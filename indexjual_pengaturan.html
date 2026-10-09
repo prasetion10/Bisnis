@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pengaturan Toko</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 15px; background: #f4f6f8; color: #333; }
+    .container { max-width: 700px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    
+    .nav-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #007bff; padding-bottom: 8px; margin-bottom: 15px; }
+    h2 { color: #007bff; margin: 0; font-size: 20px; }
+    .btn-nav { background: #eef9f1; color: #28a745; border: 1px solid #28a745; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: bold; }
+
+    .btn { background: #28a745; color: white; border: none; padding: 12px 15px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; font-size: 15px; }
+    input, select { margin-top: 5px; margin-bottom: 12px; padding: 10px; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; }
+    .box-setting { background: #f8f9fa; border: 1px solid #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+    .checkbox-group { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 12px; align-items: center; }
+    .checkbox-group label { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+    .checkbox-group input { width: auto; margin: 0; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .sub-box { background: #fff; border: 1px dashed #ced4da; padding: 10px; border-radius: 6px; margin-bottom: 12px; }
+  </style>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="nav-bar">
+      <h2>⚙️ Pengaturan Toko</h2>
+      <a href="indexjual_kasir.html" class="btn-nav">💻 Kembalikan ke Kasir</a>
+    </div>
+
+    <div class="box-setting">
+      <label><strong>Nama Toko / Usaha:</strong></label>
+      <input type="text" id="namaToko" placeholder="Contoh: Dapur Ebi">
+
+      <label><strong>Status Operasional Toko:</strong></label>
+      <div class="checkbox-group" style="background:#fff; padding:10px; border-radius:6px; border:1px solid #ddd;">
+        <label><input type="checkbox" id="optStatusToko" checked> 🟢 <strong>Toko BUKA</strong> (Bisa Menerima Pesanan)</label>
+      </div>
+
+      <label><strong>Nomor WhatsApp Penjual:</strong></label>
+      <input type="text" id="nomorWA" placeholder="Contoh: 081234567890">
+
+      <label><strong>Teks Pengumuman Berjalan (Marquee):</strong></label>
+      <input type="text" id="pengumumanToko" placeholder="Contoh: 📢 Buka Sampai Jam 22.00 | Promo Cashback 10%">
+
+      <label><strong>URL Banner Promo (Header):</strong></label>
+      <input type="text" id="bannerUrl" placeholder="https://i.ibb.co/example/banner-promo.jpg">
+
+      <label><strong>Fitur Nomor Meja (Dine-In / QR Code):</strong></label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" id="optFiturMeja"> Aktifkan Kolom Nomor Meja di Katalog Pembeli</label>
+      </div>
+
+      <label><strong>Opsi Tipe Pesanan / Layanan:</strong></label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" id="optDineIn" checked> Makan di Tempat</label>
+        <label><input type="checkbox" id="optTakeaway" checked> Bawa Pulang</label>
+        <label><input type="checkbox" id="optDelivery" onchange="toggleDeliveryInput(this.checked)"> Pengiriman Kurir</label>
+      </div>
+
+      <div id="boxOngkir" class="sub-box" style="display:none;">
+        <label><strong>Biaya Ongkos Kirim (Rp):</strong></label>
+        <input type="number" id="biayaOngkir" placeholder="Contoh: 5000">
+      </div>
+
+      <label><strong>Fitur Voucher Diskon:</strong></label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" id="optVoucher" onchange="toggleVoucherInput(this.checked)"> Aktifkan Kode Voucher Diskon</label>
+      </div>
+
+      <div id="boxVoucherSetting" class="sub-box" style="display:none;">
+        <div class="grid-2">
+          <div>
+            <label>Kode Voucher:</label>
+            <input type="text" id="kodeVoucher" placeholder="Contoh: HEMAT10">
+          </div>
+          <div>
+            <label>Potongan Harga (Rp):</label>
+            <input type="number" id="nominalVoucher" placeholder="Contoh: 5000">
+          </div>
+        </div>
+      </div>
+
+      <label><strong>Metode Pembayaran Tersedia:</strong></label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" id="optCash" checked> Tunai (Cash)</label>
+        <label><input type="checkbox" id="optQRIS" onchange="toggleQrisInput(this.checked)"> QRIS</label>
+        <label><input type="checkbox" id="optTransfer" onchange="toggleTransferInput(this.checked)"> Transfer Bank</label>
+      </div>
+
+      <div id="boxQrisUrl" class="sub-box" style="display:none;">
+        <label>URL Gambar QRIS Statis:</label>
+        <input type="text" id="qrisUrl" placeholder="https://i.ibb.co/example/qris.jpg">
+      </div>
+
+      <div id="boxTransferSetting" class="sub-box" style="display:none;">
+        <label><strong>Pengaturan Rekening Transfer:</strong></label>
+        <input type="text" id="namaBank" placeholder="Nama Bank (Contoh: BCA / Mandiri / BRI)">
+        <input type="text" id="noRekening" placeholder="Nomor Rekening">
+        <input type="text" id="atasNamaRek" placeholder="Atas Nama Pemilik Rekening">
+      </div>
+
+      <button class="btn" onclick="simpanPengaturan()">💾 Simpan Semua Pengaturan</button>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      databaseURL: "https://working1010-a500c-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function toggleQrisInput(show) { document.getElementById('boxQrisUrl').style.display = show ? 'block' : 'none'; }
+    function toggleTransferInput(show) { document.getElementById('boxTransferSetting').style.display = show ? 'block' : 'none'; }
+    function toggleDeliveryInput(show) { document.getElementById('boxOngkir').style.display = show ? 'block' : 'none'; }
+    function toggleVoucherInput(show) { document.getElementById('boxVoucherSetting').style.display = show ? 'block' : 'none'; }
+
+    db.ref('pengaturan').on('value', (snapshot) => {
+      const data = snapshot.val() || {};
+      document.getElementById('namaToko').value = data.namaToko || "Dapur Ebi";
+      document.getElementById('optStatusToko').checked = data.statusToko !== false;
+      if (data.nomorWA) document.getElementById('nomorWA').value = data.nomorWA;
+      if (data.pengumumanToko) document.getElementById('pengumumanToko').value = data.pengumumanToko;
+      if (data.bannerUrl) document.getElementById('bannerUrl').value = data.bannerUrl;
+
+      document.getElementById('optFiturMeja').checked = !!data.fiturMeja;
+
+      if (data.tipePesanan) {
+        document.getElementById('optDineIn').checked = !!data.tipePesanan.dineIn;
+        document.getElementById('optTakeaway').checked = !!data.tipePesanan.takeaway;
+        document.getElementById('optDelivery').checked = !!data.tipePesanan.delivery;
+        document.getElementById('biayaOngkir').value = data.tipePesanan.biayaOngkir || '';
+        toggleDeliveryInput(!!data.tipePesanan.delivery);
+      }
+
+      if (data.voucher) {
+        document.getElementById('optVoucher').checked = !!data.voucher.aktif;
+        document.getElementById('kodeVoucher').value = data.voucher.kode || '';
+        document.getElementById('nominalVoucher').value = data.voucher.nominal || '';
+        toggleVoucherInput(!!data.voucher.aktif);
+      }
+
+      if (data.pembayaran) {
+        document.getElementById('optCash').checked = !!data.pembayaran.cash;
+        document.getElementById('optQRIS').checked = !!data.pembayaran.qris;
+        document.getElementById('qrisUrl').value = data.pembayaran.qrisUrl || '';
+        toggleQrisInput(!!data.pembayaran.qris);
+
+        document.getElementById('optTransfer').checked = !!data.pembayaran.transfer;
+        document.getElementById('namaBank').value = data.pembayaran.namaBank || '';
+        document.getElementById('noRekening').value = data.pembayaran.noRekening || '';
+        document.getElementById('atasNamaRek').value = data.pembayaran.atasNamaRek || '';
+        toggleTransferInput(!!data.pembayaran.transfer);
+      }
+    });
+
+    function simpanPengaturan() {
+      let wa = document.getElementById('nomorWA').value.trim();
+      if (!wa) return alert('Isi nomor WA terlebih dahulu!');
+      
+      wa = wa.replace(/[^0-9]/g, '');
+      if (wa.startsWith('0')) wa = '62' + wa.slice(1);
+
+      const pengaturan = {
+        namaToko: document.getElementById('namaToko').value.trim() || 'Dapur Ebi',
+        statusToko: document.getElementById('optStatusToko').checked,
+        nomorWA: wa,
+        pengumumanToko: document.getElementById('pengumumanToko').value.trim(),
+        bannerUrl: document.getElementById('bannerUrl').value.trim(),
+        fiturMeja: document.getElementById('optFiturMeja').checked,
+        tipePesanan: {
+          dineIn: document.getElementById('optDineIn').checked,
+          takeaway: document.getElementById('optTakeaway').checked,
+          delivery: document.getElementById('optDelivery').checked,
+          biayaOngkir: Number(document.getElementById('biayaOngkir').value) || 0
+        },
+        voucher: {
+          aktif: document.getElementById('optVoucher').checked,
+          kode: document.getElementById('kodeVoucher').value.trim().toUpperCase(),
+          nominal: Number(document.getElementById('nominalVoucher').value) || 0
+        },
+        pembayaran: {
+          cash: document.getElementById('optCash').checked,
+          qris: document.getElementById('optQRIS').checked,
+          qrisUrl: document.getElementById('qrisUrl').value.trim(),
+          transfer: document.getElementById('optTransfer').checked,
+          namaBank: document.getElementById('namaBank').value.trim(),
+          noRekening: document.getElementById('noRekening').value.trim(),
+          atasNamaRek: document.getElementById('atasNamaRek').value.trim()
+        }
+      };
+
+      db.ref('pengaturan').set(pengaturan).then(() => {
+        alert('Pengaturan toko berhasil disimpan!');
+      });
+    }
+  </script>
+</body>
+</html>
