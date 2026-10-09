@@ -1,0 +1,7 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/kasir", "destination": "/indexjual_kasir.html" },
+    { "source": "/pengaturan", "destination": "/indexjual_pengaturan.html" }
+  ]
+}
